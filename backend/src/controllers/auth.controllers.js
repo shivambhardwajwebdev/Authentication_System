@@ -2,6 +2,7 @@ const userModel = require("../models/user.model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const userModal = require("../models/user.model")
+const tokenBlacklistModel = require("../models/blacklist.model")
 /**
  * @name regUserController
  * @description User Register request expects username,email,mobileNo, password 
@@ -31,7 +32,11 @@ async function regUserController(req,res){
         process.env.JWT_SECRET,
         {expiresIn:"1d"}
     )
-    res.cookie("token",token)
+   res.cookie("token", token, {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: false
+});
     res.status(201).json({
         message:"User Registered Successfully",
         user:{
@@ -50,8 +55,8 @@ async function regUserController(req,res){
  * @access Public
  */
 async function loginUserController(req,res){
-const {mobileNo,password}=req.body;
-const user = await userModal.findOne({mobileNo})
+const {email,password}=req.body;
+const user = await userModal.findOne({email})
 if(!user){
     return res.status(401).json({
         message:"Invalid email or password"
@@ -59,7 +64,7 @@ if(!user){
 }
 const isPasswordValid = await bcrypt.compare(password,user.password)
 if(!isPasswordValid){
-    return res.status(402).json({
+    return res.status(401).json({
         message:"Incorrect Password"
     })
 }
@@ -68,7 +73,11 @@ if(!isPasswordValid){
         process.env.JWT_SECRET,
         {expiresIn:"1d"}
     )
-    res.cookie("token",token)
+    res.cookie("token", token, {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: false
+});
     res.status(201).json({
         message:"User Login Successfully",
         user:{
@@ -85,13 +94,25 @@ console.log("login request Successfully")
  * @access Public 
  */
 async function logoutUserController(req,res){
-    // const token = req.cookies.token
-    // if(token){
-    //     aw
-    // }
-console.log("logout request Successfully")
+    const token = req.cookies.token
+    if(token){
+        await tokenBlacklistModel.create({token})
+    }
+    res.clearCookie("token")
+    res.status(200).json({
+        message:"User logged out Successfully"
+    })
 }
 async function getMeController(req,res){
-console.log("Get me request Successfully")
+    const user = await userModel.findById(req.user.id)
+    res.status(200).json({
+        message:"User detailed fetch successfully",
+        user:{
+            id:user._id,
+            username:user.username,
+            email:user.email,
+            mobileNo:user.mobileNo
+        }
+    })
 }
 module.exports={regUserController,loginUserController,logoutUserController,getMeController}
