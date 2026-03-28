@@ -83,7 +83,8 @@ if(!isPasswordValid){
         user:{
             id:user._id,
             username: user.username,
-            email:user.email
+            email:user.email,
+            mobileNo:user.mobileNo
         }
     })
 console.log("login request Successfully")

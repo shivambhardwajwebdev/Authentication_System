@@ -3,6 +3,9 @@ import "./auth.form.scss"
 import { Link } from 'react-router'
 import { useNavigate } from 'react-router'
 import { useAuth } from '../hooks/useAuth'
+import { AuthContext } from '../auth.context'
+import { Navigate } from 'react-router'
+import { useContext } from 'react'
 function Register() {
     const navigate=useNavigate()
     const [username, setusername] = useState("")
@@ -10,10 +13,14 @@ function Register() {
     const [mobileNo, setmobileNo] = useState(null)
     const [password, setpassword] = useState("")
     const {loading,handleRegister}=useAuth()
+    const {user} = useContext(AuthContext)
     const handleSubmit = async(e)=>{
         e.preventDefault()
         await handleRegister({username,email,mobileNo,password})
         navigate("/")
+    }
+    if(user){
+        return <Navigate to="/" replace />
     }
         if(loading){
         return <main><h1>Authenticating please wait! ...</h1></main>

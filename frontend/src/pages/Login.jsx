@@ -13,9 +13,9 @@ function Login() {
     const navigate = useNavigate()
     const {loading,handleLogin} = useAuth()
     const { user } = useContext(AuthContext);
-if(user){
-    return <Navigate to="/" replace />
-}
+    if(user){
+        return <Navigate to="/" replace />
+    }
 
 
     const handleSubmit = async(e)=>{
